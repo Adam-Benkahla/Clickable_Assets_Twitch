@@ -442,7 +442,7 @@ export default function DashboardIndexPage() {
   };
 
   const selectedEncart = encarts.find(e => e.id === selectedEncartId);
-  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=clickable-assets-twitch-luj5h8v3v-adam-benkahlas-projects.vercel.app&muted=true`;
+  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=clickable-assets-twitch.vercel.app&muted=true`;
 
   return (
     <div className="flex min-h-screen w-full bg-gray-100">
