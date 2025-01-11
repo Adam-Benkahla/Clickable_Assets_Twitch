@@ -4,45 +4,62 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '@/libs/DB';
 import { encarts } from '@/models/Schema';
 
-// Handling GET requests for all encarts
-export async function GET() {
+// Common headers for CORS
+const corsHeaders = new Headers({
+  'Access-Control-Allow-Origin': '*', // Replace '*' with specific origin if needed
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+});
+
+// Handle preflight CORS requests
+export async function OPTIONS(req: Request) {
+  // Use req to satisfy Vercel's requirement
+  // eslint-disable-next-line no-console
+  console.log(`OPTIONS request received from: ${req.url}`);
+
+  return NextResponse.json(null, { headers: corsHeaders });
+}
+
+// GET route
+export async function GET(req: Request) {
   try {
     const allEncarts = await db.select().from(encarts);
-    return NextResponse.json({ success: true, data: allEncarts });
+    return NextResponse.json({ success: true, data: allEncarts }, { headers: corsHeaders });
   } catch (error: any) {
-    console.error(error);
+    console.error(`GET request failed for: ${req.url}`, error);
     return NextResponse.json(
       { success: false, error: error.message || 'An unexpected error occurred' },
-      { status: 500 },
+      { status: 500, headers: corsHeaders },
     );
   }
 }
 
+// POST route
 export async function POST(req: Request) {
-  const {
-    label,
-    background,
-    fileUrl,
-    text,
-    linkUrl,
-    x,
-    y,
-    width,
-    height,
-    userId,
-    entryAnimation, // New field
-    exitAnimation,
-    entryAnimationDuration,
-    exitAnimationDuration, // New field
-    delayBetweenAppearances, // New field
-    displayDuration, // New field
-  } = await req.json();
-
   try {
+    const {
+      label,
+      background,
+      fileUrl,
+      text,
+      linkUrl,
+      x,
+      y,
+      width,
+      height,
+      userId,
+      entryAnimation,
+      exitAnimation,
+      entryAnimationDuration,
+      exitAnimationDuration,
+      delayBetweenAppearances,
+      displayDuration,
+    } = await req.json();
+
     if (!userId) {
       return NextResponse.json(
         { success: false, error: 'User ID is required.' },
-        { status: 400 },
+        { status: 400, headers: corsHeaders },
       );
     }
 
@@ -64,19 +81,19 @@ export async function POST(req: Request) {
         height,
         entryAnimation,
         exitAnimation,
-        entryAnimationDuration, // New field
-        exitAnimationDuration, // New field
+        entryAnimationDuration,
+        exitAnimationDuration,
         delayBetweenAppearances,
         displayDuration,
       })
       .returning();
 
-    return NextResponse.json({ success: true, data: insertedEncart });
+    return NextResponse.json({ success: true, data: insertedEncart }, { headers: corsHeaders });
   } catch (error: any) {
-    console.error(error);
+    console.error(`POST request failed for: ${req.url}`, error);
     return NextResponse.json(
       { success: false, error: error.message || 'An unexpected error occurred' },
-      { status: 500 },
+      { status: 500, headers: corsHeaders },
     );
   }
 }
