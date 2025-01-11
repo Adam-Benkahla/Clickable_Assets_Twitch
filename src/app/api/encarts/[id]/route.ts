@@ -1,12 +1,11 @@
 import { eq } from 'drizzle-orm/expressions';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/libs/DB';
 import { encarts } from '@/models/Schema';
 
 // PUT route
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const id = params.id;
   const updateData = await req.json();
 
@@ -23,10 +22,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE route
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function DELETE(req: Request) {
+  const url = new URL(req.url); // Parse the request URL
+  const id = url.pathname.split('/').pop(); // Extract the ID from the path
+
+  if (!id) {
+    return NextResponse.json(
+      { success: false, error: 'ID is required' },
+      { status: 400 },
+    );
+  }
 
   try {
+    // Perform the delete operation and get the result
     const result = await db
       .delete(encarts)
       .where(eq(encarts.id, id))
