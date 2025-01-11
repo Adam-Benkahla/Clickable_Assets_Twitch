@@ -14,6 +14,9 @@ const intlMiddleware = createMiddleware({
   defaultLocale: AppConfig.defaultLocale,
 });
 
+// Match all routes, but handle the `/api` routes differently
+const isApiRoute = (pathname: string) => pathname.startsWith('/api');
+
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
   '/:locale/dashboard(.*)',
@@ -27,9 +30,16 @@ export default function middleware(
   request: NextRequest,
   event: NextFetchEvent,
 ) {
+  const { pathname } = request.nextUrl;
+
+  // Skip locale logic for API routes
+  if (isApiRoute(pathname)) {
+    return NextResponse.next();
+  }
+
   if (
-    request.nextUrl.pathname.includes('/sign-in')
-    || request.nextUrl.pathname.includes('/sign-up')
+    pathname.includes('/sign-in')
+    || pathname.includes('/sign-up')
     || isProtectedRoute(request)
   ) {
     return clerkMiddleware((auth, req) => {

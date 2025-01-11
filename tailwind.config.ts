@@ -1,4 +1,5 @@
 /* eslint-disable ts/no-require-imports */
+import animations from '@midudev/tailwind-animations';
 import type { Config } from 'tailwindcss';
 
 const config = {
@@ -63,6 +64,7 @@ const config = {
     },
   },
   plugins: [require('tailwindcss-animate')],
+  animations,
 } satisfies Config;
 
 export default config;

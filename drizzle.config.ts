@@ -5,6 +5,7 @@ export default defineConfig({
   schema: './src/models/Schema.ts',
   dialect: 'postgresql',
   dbCredentials: {
+    // Must come from an env var or be hard-coded for local dev
     url: process.env.DATABASE_URL ?? '',
   },
   verbose: true,
