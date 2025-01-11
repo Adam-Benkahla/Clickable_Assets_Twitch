@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useLocale } from 'next-intl';
+// import { useLocale } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
 
@@ -43,7 +43,7 @@ type EncartItem = {
 
 export default function DashboardIndexPage() {
   // const t = useTranslations('DashboardIndex');
-  const locale = useLocale();
+  // const locale = useLocale();
   const { user, isLoaded, isSignedIn } = useUser();
 
   const [encarts, setEncarts] = useState<EncartItem[]>([]);
