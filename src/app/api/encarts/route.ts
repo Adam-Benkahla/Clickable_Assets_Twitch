@@ -6,9 +6,11 @@ import { encarts } from '@/models/Schema';
 
 // Common headers for CORS
 const corsHeaders = new Headers({
-  'Access-Control-Allow-Origin': '*', // Replace '*' with specific origin if needed
+  'Access-Control-Allow-Origin': 'https://z6rb10aud6suis7odu6waac19bh2rc.ext-twitch.tv',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+  'Vary': 'Origin',
+  'Access-Control-Allow-Credentials': 'true',
 });
 
 // Handle preflight CORS requests
@@ -17,7 +19,10 @@ export async function OPTIONS(req: Request) {
   // eslint-disable-next-line no-console
   console.log(`OPTIONS request received from: ${req.url}`);
 
-  return NextResponse.json(null, { headers: corsHeaders });
+  return new Response(null, {
+    status: 204, // No content for preflight requests
+    headers: corsHeaders,
+  });
 }
 
 // GET route
