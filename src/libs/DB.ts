@@ -1,10 +1,8 @@
 import { Buffer } from 'node:buffer';
 import path from 'node:path';
-
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Client } from 'pg';
-
 import * as schema from '@/models/Schema';
 
 if (!process.env.DATABASE_URL) {
@@ -22,10 +20,15 @@ const client = new Client({
         rejectUnauthorized: true,
         ca: cert,
       }
-    : undefined,
+    : false, // Use false if cert is null, otherwise undefined can cause issues
 });
 
-await client.connect();
+try {
+  await client.connect();
+} catch (error) {
+  console.error('Failed to connect to the database:', error);
+  throw error;
+}
 
 export const db = drizzle(client, { schema });
 
