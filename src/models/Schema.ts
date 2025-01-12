@@ -2,6 +2,7 @@ import {
   bigint,
   integer,
   json,
+  numeric,
   pgTable,
   serial,
   text,
@@ -63,13 +64,13 @@ export const encarts = pgTable('encarts', {
   id: text('id').primaryKey(),
   userId: varchar('user_id', { length: 50 }).notNull(),
   label: varchar('label', { length: 100 }),
-  x: integer('x').notNull().default(0),
-  y: integer('y').notNull().default(0),
-  width: integer('width').notNull().default(200),
-  height: integer('height').notNull().default(80),
+  xPercent: numeric('x_percent').notNull().default('0'),
+  yPercent: numeric('y_percent').notNull().default('0'),
+  widthPercent: numeric('width_percent').notNull().default('100'),
+  heightPercent: numeric('height_percent').notNull().default('100'),
   fileUrl: text('file_url'),
   linkUrl: text('link_url'),
-  background: varchar('background', { length: 20 }).default('#ffffff'),
+  background: varchar('background', { length: 7 }).default('#ffffff'),
   text: text('text_field'),
   entryAnimation: varchar('entry_animation', { length: 50 }),
   exitAnimation: varchar('exit_animation', { length: 50 }),
@@ -77,5 +78,5 @@ export const encarts = pgTable('encarts', {
   exitAnimationDuration: integer('exit_animation_duration').default(1000),
   delayBetweenAppearances: integer('delay_between_appearances').default(5000),
   displayDuration: integer('display_duration').default(3000),
-  referenceResolution: json('reference_resolution'), // Utilisation du type json fourni par drizzle-orm
+  referenceResolution: json('reference_resolution'), // JSON for width/height reference
 });

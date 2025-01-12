@@ -5,6 +5,9 @@ import { useUser } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
 
+const BASE_WIDTH = 1920;
+const BASE_HEIGHT = 1080;
+
 const ENCART_TEMPLATES = [
   {
     id: 'encart-discord',
@@ -25,21 +28,36 @@ const ENCART_TEMPLATES = [
 type EncartItem = {
   id: string;
   label: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  xPercent: number; // x as a percentage of the base width
+  yPercent: number; // y as a percentage of the base height
+  widthPercent: number; // width as a percentage of the base width
+  heightPercent: number; // height as a percentage of the base height
   background: string;
   fileUrl?: string;
   text?: string;
   linkUrl?: string;
   entryAnimation?: string;
   exitAnimation?: string;
-  entryAnimationDuration?: number; // New field for entry duration
-  exitAnimationDuration?: number; // New field for exit duration
+  entryAnimationDuration?: number;
+  exitAnimationDuration?: number;
   delayBetweenAppearances?: number;
   displayDuration?: number;
 };
+
+function toPixels(
+  percent: number,
+  base: number,
+  actual: number,
+): number {
+  return (percent / 100) * actual;
+}
+
+function toPercentage(
+  value: number,
+  base: number,
+): number {
+  return (value / base) * 100;
+}
 
 export default function DashboardIndexPage() {
   // const t = useTranslations('DashboardIndex');
@@ -73,10 +91,10 @@ export default function DashboardIndexPage() {
   const addEncart = async (template: typeof ENCART_TEMPLATES[number]) => {
     const newItem: Omit<EncartItem, 'id'> = {
       label: template.label,
-      x: 50,
-      y: 50,
-      width: template.width,
-      height: template.height,
+      xPercent: toPercentage(50, BASE_WIDTH),
+      yPercent: toPercentage(50, BASE_HEIGHT),
+      widthPercent: toPercentage(template.width, BASE_WIDTH),
+      heightPercent: toPercentage(template.height, BASE_HEIGHT),
       background: template.background,
     };
 
@@ -135,10 +153,10 @@ export default function DashboardIndexPage() {
         e =>
           e.id === encart.id
           && (e.label !== encart.label
-            || e.x !== encart.x
-            || e.y !== encart.y
-            || e.width !== encart.width
-            || e.height !== encart.height
+            || e.xPercent !== encart.xPercent
+            || e.yPercent !== encart.yPercent
+            || e.widthPercent !== encart.widthPercent
+            || e.heightPercent !== encart.heightPercent
             || e.background !== encart.background
             || e.fileUrl !== encart.fileUrl
             || e.text !== encart.text
@@ -800,7 +818,13 @@ export default function DashboardIndexPage() {
       </div>
 
       <div className="flex flex-1 items-center justify-center p-6">
-        <div className="relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-md bg-gray-200 shadow-lg">
+        <div
+          className="preview-container relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-md bg-gray-200 shadow-lg"
+          style={{
+            aspectRatio: `${BASE_WIDTH} / ${BASE_HEIGHT}`,
+          }}
+        >
+          {/* Twitch Player */}
           <iframe
             title="Twitch Player"
             src={twitchEmbedUrl}
@@ -810,25 +834,35 @@ export default function DashboardIndexPage() {
 
           {encarts.map((encart) => {
             const isSelected = encart.id === selectedEncartId;
+
+            const containerElement = document.querySelector('.preview-container') as HTMLElement | null;
+            const containerWidth = containerElement?.offsetWidth || BASE_WIDTH;
+            const containerHeight = containerElement?.offsetHeight || BASE_HEIGHT;
+
             return (
               <Rnd
                 key={encart.id}
-                id={encart.id} // Add unique ID for each encart
-                default={{
-                  x: encart.x,
-                  y: encart.y,
-                  width: encart.width,
-                  height: encart.height,
+                id={encart.id}
+                position={{
+                  x: toPixels(encart.xPercent, BASE_WIDTH, containerWidth),
+                  y: toPixels(encart.yPercent, BASE_HEIGHT, containerHeight),
+                }}
+                size={{
+                  width: toPixels(encart.widthPercent, BASE_WIDTH, containerWidth),
+                  height: toPixels(encart.heightPercent, BASE_HEIGHT, containerHeight),
                 }}
                 onDragStop={(_e, d) => {
-                  updateEncart(encart.id, { x: d.x, y: d.y });
+                  updateEncart(encart.id, {
+                    xPercent: toPercentage(d.x, containerWidth),
+                    yPercent: toPercentage(d.y, containerHeight),
+                  });
                 }}
                 onResizeStop={(_e, _dir, ref, _delta, pos) => {
                   updateEncart(encart.id, {
-                    width: Number.parseFloat(ref.style.width),
-                    height: Number.parseFloat(ref.style.height),
-                    x: pos.x,
-                    y: pos.y,
+                    widthPercent: toPercentage(Number.parseFloat(ref.style.width), containerWidth),
+                    heightPercent: toPercentage(Number.parseFloat(ref.style.height), containerHeight),
+                    xPercent: toPercentage(pos.x, containerWidth),
+                    yPercent: toPercentage(pos.y, containerHeight),
                   });
                 }}
                 style={{
