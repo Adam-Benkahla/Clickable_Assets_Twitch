@@ -861,33 +861,33 @@ export default function DashboardIndexPage() {
           {encarts.map((encart) => {
             const isSelected = encart.id === selectedEncartId;
 
-            // const scaleX = BASE_WIDTH / (encart.referenceResolution?.width || BASE_WIDTH);
-            // const scaleY = BASE_HEIGHT / (encart.referenceResolution?.height || BASE_HEIGHT);
+            // Extract the scale factor from the parent container
+            const scaleFactor = 0.6; // This matches the `transform: scale(0.6)` applied to the container
 
             return (
               <Rnd
                 key={encart.id}
                 id={encart.id}
                 position={{
-                  x: encart.x, // Use unscaled values directly
-                  y: encart.y,
+                  x: encart.x * scaleFactor, // Apply scaling for display
+                  y: encart.y * scaleFactor,
                 }}
                 size={{
-                  width: encart.width,
-                  height: encart.height,
+                  width: encart.width * scaleFactor,
+                  height: encart.height * scaleFactor,
                 }}
                 onDragStop={(_e, d) => {
                   updateEncart(encart.id, {
-                    x: d.x, // Save the exact values from the drag event
-                    y: d.y,
+                    x: d.x / scaleFactor, // Remove scaling when saving
+                    y: d.y / scaleFactor,
                   });
                 }}
                 onResizeStop={(_e, _dir, ref, _delta, pos) => {
                   updateEncart(encart.id, {
-                    width: Number.parseFloat(ref.style.width),
-                    height: Number.parseFloat(ref.style.height),
-                    x: pos.x,
-                    y: pos.y,
+                    width: Number.parseFloat(ref.style.width) / scaleFactor, // Remove scaling when saving
+                    height: Number.parseFloat(ref.style.height) / scaleFactor,
+                    x: pos.x / scaleFactor,
+                    y: pos.y / scaleFactor,
                   });
                 }}
                 style={{
