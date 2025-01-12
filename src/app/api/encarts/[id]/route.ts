@@ -6,7 +6,7 @@ import { encarts } from '@/models/Schema';
 
 // Common headers for CORS
 const corsHeaders = new Headers({
-  'Access-Control-Allow-Origin': 'https://z6rb10aud6suis7odu6waac19bh2rc.ext-twitch.tv',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Authorization, Content-Type',
   'Vary': 'Origin',
