@@ -35,10 +35,14 @@ type EncartItem = {
   linkUrl?: string;
   entryAnimation?: string;
   exitAnimation?: string;
-  entryAnimationDuration?: number; // New field for entry duration
-  exitAnimationDuration?: number; // New field for exit duration
+  entryAnimationDuration?: number;
+  exitAnimationDuration?: number;
   delayBetweenAppearances?: number;
   displayDuration?: number;
+  referenceResolution?: { // Ajout de la propriété referenceResolution
+    width: number;
+    height: number;
+  };
 };
 
 export default function DashboardIndexPage() {
@@ -78,6 +82,7 @@ export default function DashboardIndexPage() {
       width: template.width,
       height: template.height,
       background: template.background,
+      referenceResolution: { width: window.innerWidth, height: window.innerHeight }, // Sauvegarde la résolution actuelle
     };
 
     const response = await fetch('/api/encarts', {
@@ -211,7 +216,7 @@ export default function DashboardIndexPage() {
     setEncarts(data.data);
     setInitialEncarts(data.data);
   };
-
+  // console
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {

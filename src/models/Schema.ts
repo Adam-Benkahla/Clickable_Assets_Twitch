@@ -1,6 +1,7 @@
 import {
   bigint,
   integer,
+  json,
   pgTable,
   serial,
   text,
@@ -72,8 +73,9 @@ export const encarts = pgTable('encarts', {
   text: text('text_field'),
   entryAnimation: varchar('entry_animation', { length: 50 }),
   exitAnimation: varchar('exit_animation', { length: 50 }),
-  entryAnimationDuration: integer('entry_animation_duration').default(1000), // New field for entry animation duration
-  exitAnimationDuration: integer('exit_animation_duration').default(1000), // New field for exit animation duration
+  entryAnimationDuration: integer('entry_animation_duration').default(1000),
+  exitAnimationDuration: integer('exit_animation_duration').default(1000),
   delayBetweenAppearances: integer('delay_between_appearances').default(5000),
   displayDuration: integer('display_duration').default(3000),
+  referenceResolution: json('reference_resolution'), // Utilisation du type json fourni par drizzle-orm
 });
