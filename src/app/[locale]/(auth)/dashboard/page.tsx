@@ -189,7 +189,7 @@ export default function DashboardIndexPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...encart, userId }),
+            body: JSON.stringify({ ...encart, userId: user?.id }), // Correct
           });
 
           const data = await response.json();
@@ -208,7 +208,7 @@ export default function DashboardIndexPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...encart, userId }),
+            body: JSON.stringify({ ...encart, userId: user?.id }),
           });
 
           const data = await response.json();
