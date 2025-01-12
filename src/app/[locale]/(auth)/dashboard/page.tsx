@@ -8,6 +8,9 @@ import { Rnd } from 'react-rnd';
 const ORIGINAL_WIDTH = 1536; // Default width of the Twitch player
 const ORIGINAL_HEIGHT = 810; // Default height of the Twitch player
 
+const BASE_WIDTH = 1920;
+const BASE_HEIGHT = 1080;
+
 const ENCART_TEMPLATES = [
   {
     id: 'encart-discord',
@@ -88,8 +91,6 @@ export default function DashboardIndexPage() {
   }
 
   const addEncart = async (template: typeof ENCART_TEMPLATES[number]) => {
-    const iframeSize = document.querySelector('iframe')?.getBoundingClientRect();
-
     const newItem: Omit<EncartItem, 'id'> = {
       label: template.label,
       x: 50,
@@ -98,9 +99,9 @@ export default function DashboardIndexPage() {
       height: template.height,
       background: template.background,
       referenceResolution: {
-        width: iframeSize?.width || ORIGINAL_WIDTH,
-        height: iframeSize?.height || ORIGINAL_HEIGHT,
-      }, // Include the reference resolution
+        width: BASE_WIDTH,
+        height: BASE_HEIGHT,
+      },
     };
 
     const response = await fetch('/api/encarts', {
@@ -149,12 +150,14 @@ export default function DashboardIndexPage() {
     }
 
     const userId = user.id;
-    const referenceResolution = getIframeSize();
 
-    // Ensure all encarts have the latest referenceResolution
+    // Use the fixed base resolution for saving encarts
     const updatedEncarts = encarts.map(encart => ({
       ...encart,
-      referenceResolution,
+      referenceResolution: {
+        width: BASE_WIDTH,
+        height: BASE_HEIGHT,
+      },
     }));
 
     const toInsert = updatedEncarts.filter(encart =>
@@ -168,7 +171,7 @@ export default function DashboardIndexPage() {
         return false;
       }
 
-      // Check if there are any changes (including referenceResolution)
+      // Check if there are any changes (excluding referenceResolution)
       const hasChanges
         = original.label !== encart.label
         || original.x !== encart.x
@@ -184,8 +187,7 @@ export default function DashboardIndexPage() {
         || original.entryAnimationDuration !== encart.entryAnimationDuration
         || original.exitAnimationDuration !== encart.exitAnimationDuration
         || original.delayBetweenAppearances !== encart.delayBetweenAppearances
-        || original.displayDuration !== encart.displayDuration
-        || JSON.stringify(original.referenceResolution) !== JSON.stringify(encart.referenceResolution); // Compare resolutions
+        || original.displayDuration !== encart.displayDuration;
 
       return hasChanges;
     });
@@ -842,37 +844,60 @@ export default function DashboardIndexPage() {
           Save Changes
         </button>
       </div>
+      {' '}
+      {/* This closes the sidebar div */}
 
       <div className="flex flex-1 items-center justify-center p-6">
-        <div className="relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-md bg-gray-200 shadow-lg">
+        <div
+          className="relative overflow-hidden rounded-md bg-gray-200 shadow-lg"
+          style={{
+            width: `${BASE_WIDTH}px`,
+            height: `${BASE_HEIGHT}px`,
+            transform: 'scale(0.6)',
+            transformOrigin: 'top left',
+          }}
+        >
           <iframe
             title="Twitch Player"
             src={twitchEmbedUrl}
             allowFullScreen
-            className="absolute left-0 top-0 size-full"
+            style={{
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+            }}
           />
 
           {encarts.map((encart) => {
             const isSelected = encart.id === selectedEncartId;
+
+            const scaleX = BASE_WIDTH / (encart.referenceResolution?.width || BASE_WIDTH);
+            const scaleY = BASE_HEIGHT / (encart.referenceResolution?.height || BASE_HEIGHT);
+
             return (
               <Rnd
                 key={encart.id}
-                id={encart.id} // Add unique ID for each encart
-                default={{
-                  x: encart.x,
-                  y: encart.y,
-                  width: encart.width,
-                  height: encart.height,
+                id={encart.id}
+                position={{
+                  x: encart.x * scaleX,
+                  y: encart.y * scaleY,
+                }}
+                size={{
+                  width: encart.width * scaleX,
+                  height: encart.height * scaleY,
                 }}
                 onDragStop={(_e, d) => {
-                  updateEncart(encart.id, { x: d.x, y: d.y });
+                  updateEncart(encart.id, {
+                    x: d.x / scaleX,
+                    y: d.y / scaleY,
+                  });
                 }}
                 onResizeStop={(_e, _dir, ref, _delta, pos) => {
                   updateEncart(encart.id, {
-                    width: Number.parseFloat(ref.style.width),
-                    height: Number.parseFloat(ref.style.height),
-                    x: pos.x,
-                    y: pos.y,
+                    width: Number.parseFloat(ref.style.width) / scaleX,
+                    height: Number.parseFloat(ref.style.height) / scaleY,
+                    x: pos.x / scaleX,
+                    y: pos.y / scaleY,
                   });
                 }}
                 style={{
@@ -898,5 +923,5 @@ export default function DashboardIndexPage() {
         </div>
       </div>
     </div>
-  );
+  ); // This closes the return of the DashboardIndexPage function
 }
