@@ -4,10 +4,7 @@ import { useUser } from '@clerk/nextjs';
 // import { useLocale } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
-
-const ORIGINAL_WIDTH = 1536; // Default width of the Twitch player
-const ORIGINAL_HEIGHT = 810; // Default height of the Twitch player
-
+// base settings to emulate OBS canvas
 const BASE_WIDTH = 1920;
 const BASE_HEIGHT = 1080;
 
