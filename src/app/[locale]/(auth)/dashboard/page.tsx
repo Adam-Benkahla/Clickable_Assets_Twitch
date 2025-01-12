@@ -143,6 +143,7 @@ export default function DashboardIndexPage() {
     const toInsert = encarts.filter(encart =>
       initialEncarts.every(e => e.id !== encart.id),
     );
+    console.log('Sending encarts:', JSON.stringify(toInsert, null, 2));
     const toUpdate = encarts.filter(encart =>
       initialEncarts.some(
         e =>
