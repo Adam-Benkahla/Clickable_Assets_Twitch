@@ -68,9 +68,9 @@ export async function POST(req: Request) {
       exitAnimationDuration,
       delayBetweenAppearances,
       displayDuration,
-      referenceResolution, // Nouveau champ à gérer
+      referenceResolution, // Ensure this is extracted from the request
     } = await req.json();
-
+    console.log('Received request body:', { referenceResolution });
     if (!userId) {
       return NextResponse.json(
         { success: false, error: 'User ID is required.' },
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         exitAnimationDuration,
         delayBetweenAppearances,
         displayDuration,
-        referenceResolution, // Insérer la résolution de référence
+        referenceResolution, // Insert into the DB
       })
       .returning();
 

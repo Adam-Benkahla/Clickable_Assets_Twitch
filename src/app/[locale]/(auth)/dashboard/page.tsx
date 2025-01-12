@@ -5,6 +5,9 @@ import { useUser } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
 
+const ORIGINAL_WIDTH = 1536; // Default width of the Twitch player
+const ORIGINAL_HEIGHT = 810; // Default height of the Twitch player
+
 const ENCART_TEMPLATES = [
   {
     id: 'encart-discord',
@@ -75,6 +78,8 @@ export default function DashboardIndexPage() {
   }
 
   const addEncart = async (template: typeof ENCART_TEMPLATES[number]) => {
+    const iframeSize = document.querySelector('iframe')?.getBoundingClientRect();
+
     const newItem: Omit<EncartItem, 'id'> = {
       label: template.label,
       x: 50,
@@ -82,7 +87,10 @@ export default function DashboardIndexPage() {
       width: template.width,
       height: template.height,
       background: template.background,
-      referenceResolution: { width: window.innerWidth, height: window.innerHeight }, // Sauvegarde la résolution actuelle
+      referenceResolution: {
+        width: iframeSize?.width || ORIGINAL_WIDTH,
+        height: iframeSize?.height || ORIGINAL_HEIGHT,
+      }, // Include the reference resolution
     };
 
     const response = await fetch('/api/encarts', {
