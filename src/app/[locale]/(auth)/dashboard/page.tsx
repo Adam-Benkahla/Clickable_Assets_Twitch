@@ -134,13 +134,9 @@ export default function DashboardIndexPage() {
 
   const saveEncartSettings = async () => {
     if (!user) {
-      console.error('User is not authenticated');
-      return;
+      return console.error('User is not authenticated');
     }
 
-    const userId = user.id;
-
-    // Use the fixed base resolution for saving encarts
     const updatedEncarts = encarts.map(encart => ({
       ...encart,
       referenceResolution: {
@@ -836,82 +832,71 @@ export default function DashboardIndexPage() {
       {' '}
       {/* This closes the sidebar div */}
 
-      <div className="flex flex-1 items-center justify-center p-6">
-        <div
-          className="relative overflow-hidden rounded-md bg-gray-200 shadow-lg"
+      <div
+        className="relative overflow-hidden rounded-md bg-gray-200 shadow-lg"
+        style={{
+          width: `${BASE_WIDTH}px`,
+          height: `${BASE_HEIGHT}px`,
+          transform: 'scale(0.6)', // Only for display
+          transformOrigin: 'top left',
+        }}
+      >
+        <iframe
+          title="Twitch Player"
+          src={twitchEmbedUrl}
+          allowFullScreen
           style={{
-            width: `${BASE_WIDTH}px`,
-            height: `${BASE_HEIGHT}px`,
-            transform: 'scale(0.6)', // Apply scaling visually
-            transformOrigin: 'top left',
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
           }}
-        >
+        />
 
-          <iframe
-            title="Twitch Player"
-            src={twitchEmbedUrl}
-            allowFullScreen
-            style={{
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-            }}
-          />
+        {encarts.map((encart) => {
+          const isSelected = encart.id === selectedEncartId;
 
-          {encarts.map((encart) => {
-            const isSelected = encart.id === selectedEncartId;
-
-            // Extract the scale factor from the parent container
-            const scaleFactor = 0.6; // This matches the `transform: scale(0.6)` applied to the container
-
-            return (
-              <Rnd
-                key={encart.id}
-                id={encart.id}
-                position={{
-                  x: encart.x * scaleFactor, // Apply scaling for display
-                  y: encart.y * scaleFactor,
-                }}
-                size={{
-                  width: encart.width * scaleFactor,
-                  height: encart.height * scaleFactor,
-                }}
-                onDragStop={(_e, d) => {
-                  updateEncart(encart.id, {
-                    x: d.x / scaleFactor, // Remove scaling when saving
-                    y: d.y / scaleFactor,
-                  });
-                }}
-                onResizeStop={(_e, _dir, ref, _delta, pos) => {
-                  updateEncart(encart.id, {
-                    width: Number.parseFloat(ref.style.width) / scaleFactor, // Remove scaling when saving
-                    height: Number.parseFloat(ref.style.height) / scaleFactor,
-                    x: pos.x / scaleFactor,
-                    y: pos.y / scaleFactor,
-                  });
-                }}
-                style={{
-                  border: isSelected ? '2px solid #00ff00' : '1px solid #999',
-                  backgroundColor: encart.background,
-                  backgroundImage: encart.fileUrl ? `url(${encart.fileUrl})` : undefined,
-                  backgroundSize: 'cover',
-                  color: '#fff',
-                  cursor: 'move',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '4px',
-                  animationDuration: '1s',
-                }}
-                bounds="parent"
-                onClick={() => setSelectedEncartId(encart.id)}
-              >
-                {encart.text ?? encart.label}
-              </Rnd>
-            );
-          })}
-        </div>
+          return (
+            <Rnd
+              key={encart.id}
+              id={encart.id}
+              position={{
+                x: encart.x, // Use raw values
+                y: encart.y,
+              }}
+              size={{
+                width: encart.width,
+                height: encart.height,
+              }}
+              onDragStop={(_e, d) => {
+                updateEncart(encart.id, {
+                  x: d.x, // Save raw values
+                  y: d.y,
+                });
+              }}
+              onResizeStop={(_e, _dir, ref, _delta, pos) => {
+                updateEncart(encart.id, {
+                  width: Number.parseFloat(ref.style.width),
+                  height: Number.parseFloat(ref.style.height),
+                  x: pos.x,
+                  y: pos.y,
+                });
+              }}
+              style={{
+                border: isSelected ? '2px solid #00ff00' : '1px solid #999',
+                backgroundColor: encart.background,
+                backgroundImage: encart.fileUrl ? `url(${encart.fileUrl})` : undefined,
+                backgroundSize: 'cover',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px',
+              }}
+              bounds="parent"
+              onClick={() => setSelectedEncartId(encart.id)}
+            />
+          );
+        })}
       </div>
     </div>
-  ); // This closes the return of the DashboardIndexPage function
+  ); // Closing return statement for DashboardIndexPage
 }
