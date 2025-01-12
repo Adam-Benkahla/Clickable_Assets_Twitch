@@ -4,9 +4,6 @@ import { useUser } from '@clerk/nextjs';
 // import { useLocale } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import { Rnd } from 'react-rnd';
-// base settings to emulate OBS canvas
-const BASE_WIDTH = 1920;
-const BASE_HEIGHT = 1080;
 
 const ENCART_TEMPLATES = [
   {
@@ -38,14 +35,10 @@ type EncartItem = {
   linkUrl?: string;
   entryAnimation?: string;
   exitAnimation?: string;
-  entryAnimationDuration?: number;
-  exitAnimationDuration?: number;
+  entryAnimationDuration?: number; // New field for entry duration
+  exitAnimationDuration?: number; // New field for exit duration
   delayBetweenAppearances?: number;
   displayDuration?: number;
-  referenceResolution?: { // Ajout de la propriété referenceResolution
-    width: number;
-    height: number;
-  };
 };
 
 export default function DashboardIndexPage() {
@@ -77,8 +70,6 @@ export default function DashboardIndexPage() {
     return <div>Please sign in to view your dashboard</div>;
   }
 
-  // Function to get the current iframe size
-
   const addEncart = async (template: typeof ENCART_TEMPLATES[number]) => {
     const newItem: Omit<EncartItem, 'id'> = {
       label: template.label,
@@ -87,10 +78,6 @@ export default function DashboardIndexPage() {
       width: template.width,
       height: template.height,
       background: template.background,
-      referenceResolution: {
-        width: BASE_WIDTH,
-        height: BASE_HEIGHT,
-      },
     };
 
     const response = await fetch('/api/encarts', {
@@ -134,51 +121,34 @@ export default function DashboardIndexPage() {
 
   const saveEncartSettings = async () => {
     if (!user) {
-      return console.error('User is not authenticated');
+      console.error('User is not authenticated');
+      return;
     }
 
-    const updatedEncarts = encarts.map(encart => ({
-      ...encart,
-      referenceResolution: {
-        width: BASE_WIDTH,
-        height: BASE_HEIGHT,
-      },
-    }));
+    const userId = user.id;
 
-    const toInsert = updatedEncarts.filter(encart =>
+    const toInsert = encarts.filter(encart =>
       initialEncarts.every(e => e.id !== encart.id),
     );
-
-    const toUpdate = updatedEncarts.filter((encart) => {
-      const original = initialEncarts.find(e => e.id === encart.id);
-
-      if (!original) {
-        return false;
-      }
-
-      // Check if there are any changes (excluding referenceResolution)
-      const hasChanges
-        = original.label !== encart.label
-        || original.x !== encart.x
-        || original.y !== encart.y
-        || original.width !== encart.width
-        || original.height !== encart.height
-        || original.background !== encart.background
-        || original.fileUrl !== encart.fileUrl
-        || original.text !== encart.text
-        || original.linkUrl !== encart.linkUrl
-        || original.entryAnimation !== encart.entryAnimation
-        || original.exitAnimation !== encart.exitAnimation
-        || original.entryAnimationDuration !== encart.entryAnimationDuration
-        || original.exitAnimationDuration !== encart.exitAnimationDuration
-        || original.delayBetweenAppearances !== encart.delayBetweenAppearances
-        || original.displayDuration !== encart.displayDuration;
-
-      return hasChanges;
-    });
-
+    const toUpdate = encarts.filter(encart =>
+      initialEncarts.some(
+        e =>
+          e.id === encart.id
+          && (e.label !== encart.label
+            || e.x !== encart.x
+            || e.y !== encart.y
+            || e.width !== encart.width
+            || e.height !== encart.height
+            || e.background !== encart.background
+            || e.fileUrl !== encart.fileUrl
+            || e.text !== encart.text
+            || e.linkUrl !== encart.linkUrl
+            || e.entryAnimation !== encart.entryAnimation
+            || e.exitAnimation !== encart.exitAnimation),
+      ),
+    );
     const toDelete = initialEncarts.filter(encart =>
-      updatedEncarts.every(e => e.id !== encart.id),
+      encarts.every(e => e.id !== encart.id),
     );
 
     if (toInsert.length > 0) {
@@ -189,7 +159,7 @@ export default function DashboardIndexPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...encart, userId: user?.id }), // Correct
+            body: JSON.stringify({ ...encart, userId }),
           });
 
           const data = await response.json();
@@ -208,7 +178,7 @@ export default function DashboardIndexPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...encart, userId: user?.id }),
+            body: JSON.stringify({ ...encart, userId }),
           });
 
           const data = await response.json();
@@ -242,7 +212,6 @@ export default function DashboardIndexPage() {
     setInitialEncarts(data.data);
   };
 
-  // console
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -829,74 +798,61 @@ export default function DashboardIndexPage() {
           Save Changes
         </button>
       </div>
-      {' '}
-      {/* This closes the sidebar div */}
 
-      <div
-        className="relative overflow-hidden rounded-md bg-gray-200 shadow-lg"
-        style={{
-          width: `${BASE_WIDTH}px`,
-          height: `${BASE_HEIGHT}px`,
-          transform: 'scale(0.6)', // Only for display
-          transformOrigin: 'top left',
-        }}
-      >
-        <iframe
-          title="Twitch Player"
-          src={twitchEmbedUrl}
-          allowFullScreen
-          style={{
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-          }}
-        />
+      <div className="flex flex-1 items-center justify-center p-6">
+        <div className="relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-md bg-gray-200 shadow-lg">
+          <iframe
+            title="Twitch Player"
+            src={twitchEmbedUrl}
+            allowFullScreen
+            className="absolute left-0 top-0 size-full"
+          />
 
-        {encarts.map((encart) => {
-          const isSelected = encart.id === selectedEncartId;
-
-          return (
-            <Rnd
-              key={encart.id}
-              id={encart.id}
-              position={{
-                x: encart.x, // Use raw values
-                y: encart.y,
-              }}
-              size={{
-                width: encart.width,
-                height: encart.height,
-              }}
-              onDragStop={(_e, d) => {
-                updateEncart(encart.id, {
-                  x: d.x, // Save raw values
-                  y: d.y,
-                });
-              }}
-              onResizeStop={(_e, _dir, ref, _delta, pos) => {
-                updateEncart(encart.id, {
-                  width: Number.parseFloat(ref.style.width),
-                  height: Number.parseFloat(ref.style.height),
-                  x: pos.x,
-                  y: pos.y,
-                });
-              }}
-              style={{
-                border: isSelected ? '2px solid #00ff00' : '1px solid #999',
-                backgroundColor: encart.background,
-                backgroundImage: encart.fileUrl ? `url(${encart.fileUrl})` : undefined,
-                backgroundSize: 'cover',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '4px',
-              }}
-              bounds="parent"
-              onClick={() => setSelectedEncartId(encart.id)}
-            />
-          );
-        })}
+          {encarts.map((encart) => {
+            const isSelected = encart.id === selectedEncartId;
+            return (
+              <Rnd
+                key={encart.id}
+                id={encart.id} // Add unique ID for each encart
+                default={{
+                  x: encart.x,
+                  y: encart.y,
+                  width: encart.width,
+                  height: encart.height,
+                }}
+                onDragStop={(_e, d) => {
+                  updateEncart(encart.id, { x: d.x, y: d.y });
+                }}
+                onResizeStop={(_e, _dir, ref, _delta, pos) => {
+                  updateEncart(encart.id, {
+                    width: Number.parseFloat(ref.style.width),
+                    height: Number.parseFloat(ref.style.height),
+                    x: pos.x,
+                    y: pos.y,
+                  });
+                }}
+                style={{
+                  border: isSelected ? '2px solid #00ff00' : '1px solid #999',
+                  backgroundColor: encart.background,
+                  backgroundImage: encart.fileUrl ? `url(${encart.fileUrl})` : undefined,
+                  backgroundSize: 'cover',
+                  color: '#fff',
+                  cursor: 'move',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  animationDuration: '1s',
+                }}
+                bounds="parent"
+                onClick={() => setSelectedEncartId(encart.id)}
+              >
+                {encart.text ?? encart.label}
+              </Rnd>
+            );
+          })}
+        </div>
       </div>
     </div>
-  ); // Closing return statement for DashboardIndexPage
+  );
 }
