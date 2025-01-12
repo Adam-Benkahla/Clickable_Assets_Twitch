@@ -842,10 +842,11 @@ export default function DashboardIndexPage() {
           style={{
             width: `${BASE_WIDTH}px`,
             height: `${BASE_HEIGHT}px`,
-            transform: 'scale(0.6)',
+            transform: 'scale(0.6)', // Apply scaling visually
             transformOrigin: 'top left',
           }}
         >
+
           <iframe
             title="Twitch Player"
             src={twitchEmbedUrl}
@@ -868,27 +869,25 @@ export default function DashboardIndexPage() {
                 key={encart.id}
                 id={encart.id}
                 position={{
-                  x: encart.x * scaleX,
-                  y: encart.y * scaleY,
+                  x: encart.x, // Use unscaled values directly
+                  y: encart.y,
                 }}
                 size={{
-                  width: encart.width * scaleX,
-                  height: encart.height * scaleY,
+                  width: encart.width,
+                  height: encart.height,
                 }}
                 onDragStop={(_e, d) => {
-                  const canvasScale = 0.6; // Match the scale applied to the canvas
                   updateEncart(encart.id, {
-                    x: d.x / (scaleX * canvasScale),
-                    y: d.y / (scaleY * canvasScale),
+                    x: d.x, // Save the exact values from the drag event
+                    y: d.y,
                   });
                 }}
                 onResizeStop={(_e, _dir, ref, _delta, pos) => {
-                  const canvasScale = 0.6;
                   updateEncart(encart.id, {
-                    width: Number.parseFloat(ref.style.width) / (scaleX * canvasScale),
-                    height: Number.parseFloat(ref.style.height) / (scaleY * canvasScale),
-                    x: pos.x / (scaleX * canvasScale),
-                    y: pos.y / (scaleY * canvasScale),
+                    width: Number.parseFloat(ref.style.width),
+                    height: Number.parseFloat(ref.style.height),
+                    x: pos.x,
+                    y: pos.y,
                   });
                 }}
                 style={{
