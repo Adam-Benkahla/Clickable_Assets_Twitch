@@ -70,6 +70,7 @@ export async function POST(req: Request) {
       displayDuration,
       referenceResolution, // Ensure this is extracted from the request
     } = await req.json();
+    // eslint-disable-next-line no-console
     console.log('Received request body:', { referenceResolution });
     if (!userId) {
       return NextResponse.json(
