@@ -77,6 +77,16 @@ export default function DashboardIndexPage() {
     return <div>Please sign in to view your dashboard</div>;
   }
 
+  // Function to get the current iframe size
+  function getIframeSize() {
+    const iframeElement = document.querySelector('iframe');
+    if (iframeElement) {
+      const { width, height } = iframeElement.getBoundingClientRect();
+      return { width: Math.round(width), height: Math.round(height) };
+    }
+    return { width: 1536, height: 810 }; // Fallback values if iframe is not found
+  }
+
   const addEncart = async (template: typeof ENCART_TEMPLATES[number]) => {
     const iframeSize = document.querySelector('iframe')?.getBoundingClientRect();
 
@@ -139,30 +149,49 @@ export default function DashboardIndexPage() {
     }
 
     const userId = user.id;
+    const referenceResolution = getIframeSize();
 
-    const toInsert = encarts.filter(encart =>
+    // Ensure all encarts have the latest referenceResolution
+    const updatedEncarts = encarts.map(encart => ({
+      ...encart,
+      referenceResolution,
+    }));
+
+    const toInsert = updatedEncarts.filter(encart =>
       initialEncarts.every(e => e.id !== encart.id),
     );
-    console.log('Sending encarts:', JSON.stringify(toInsert, null, 2));
-    const toUpdate = encarts.filter(encart =>
-      initialEncarts.some(
-        e =>
-          e.id === encart.id
-          && (e.label !== encart.label
-            || e.x !== encart.x
-            || e.y !== encart.y
-            || e.width !== encart.width
-            || e.height !== encart.height
-            || e.background !== encart.background
-            || e.fileUrl !== encart.fileUrl
-            || e.text !== encart.text
-            || e.linkUrl !== encart.linkUrl
-            || e.entryAnimation !== encart.entryAnimation
-            || e.exitAnimation !== encart.exitAnimation),
-      ),
-    );
+
+    const toUpdate = updatedEncarts.filter((encart) => {
+      const original = initialEncarts.find(e => e.id === encart.id);
+
+      if (!original) {
+        return false;
+      }
+
+      // Check if there are any changes (including referenceResolution)
+      const hasChanges
+        = original.label !== encart.label
+        || original.x !== encart.x
+        || original.y !== encart.y
+        || original.width !== encart.width
+        || original.height !== encart.height
+        || original.background !== encart.background
+        || original.fileUrl !== encart.fileUrl
+        || original.text !== encart.text
+        || original.linkUrl !== encart.linkUrl
+        || original.entryAnimation !== encart.entryAnimation
+        || original.exitAnimation !== encart.exitAnimation
+        || original.entryAnimationDuration !== encart.entryAnimationDuration
+        || original.exitAnimationDuration !== encart.exitAnimationDuration
+        || original.delayBetweenAppearances !== encart.delayBetweenAppearances
+        || original.displayDuration !== encart.displayDuration
+        || JSON.stringify(original.referenceResolution) !== JSON.stringify(encart.referenceResolution); // Compare resolutions
+
+      return hasChanges;
+    });
+
     const toDelete = initialEncarts.filter(encart =>
-      encarts.every(e => e.id !== encart.id),
+      updatedEncarts.every(e => e.id !== encart.id),
     );
 
     if (toInsert.length > 0) {
@@ -225,6 +254,7 @@ export default function DashboardIndexPage() {
     setEncarts(data.data);
     setInitialEncarts(data.data);
   };
+
   // console
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
