@@ -861,8 +861,8 @@ export default function DashboardIndexPage() {
           {encarts.map((encart) => {
             const isSelected = encart.id === selectedEncartId;
 
-            const scaleX = BASE_WIDTH / (encart.referenceResolution?.width || BASE_WIDTH);
-            const scaleY = BASE_HEIGHT / (encart.referenceResolution?.height || BASE_HEIGHT);
+            // const scaleX = BASE_WIDTH / (encart.referenceResolution?.width || BASE_WIDTH);
+            // const scaleY = BASE_HEIGHT / (encart.referenceResolution?.height || BASE_HEIGHT);
 
             return (
               <Rnd
