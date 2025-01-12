@@ -44,8 +44,8 @@ type EncartItem = {
   displayDuration?: number;
 };
 
-function toPixels(percent: number, actual: number): number {
-  return (percent / 100) * actual;
+function toPixels(percent: number, base: number): number {
+  return (percent / 100) * base;
 }
 
 function toPercentage(
@@ -64,6 +64,7 @@ export default function DashboardIndexPage() {
   const [initialEncarts, setInitialEncarts] = useState<EncartItem[]>([]);
   const [selectedEncartId, setSelectedEncartId] = useState<string | null>(null);
   const [twitchChannel, setTwitchChannel] = useState<string>('');
+  const selectedEncart = encarts.find(e => e.id === selectedEncartId);
 
   useEffect(() => {
     const fetchEncarts = async () => {
@@ -455,9 +456,11 @@ export default function DashboardIndexPage() {
     }
   };
 
-  const selectedEncart = encarts.find(e => e.id === selectedEncartId);
   const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=clickable-assets-twitch.vercel.app&muted=true`;
-
+  const scaleFactor = Math.min(
+    window.innerWidth / BASE_WIDTH,
+    window.innerHeight / BASE_HEIGHT,
+  );
   return (
     <div className="flex min-h-screen w-full bg-gray-100">
       {/* Ensure Tailwind includes these animation classes */}
@@ -473,6 +476,7 @@ export default function DashboardIndexPage() {
           {ENCART_TEMPLATES.map(template => (
             <button
               key={template.id}
+              type="button" // Add this line
               onClick={() => addEncart(template)}
               className="rounded-md bg-blue-600 px-3 py-2 text-white transition hover:bg-blue-700"
             >
@@ -484,8 +488,9 @@ export default function DashboardIndexPage() {
         <hr className="my-4" />
 
         <div>
-          <label className="block font-medium">Twitch Channel URL:</label>
+          <label htmlFor="twitchChannel" className="block font-medium">Twitch Channel URL:</label>
           <input
+            id="twitchChannel" // Add this line
             type="text"
             className="w-full rounded-md border px-3 py-2"
             placeholder="Enter Twitch channel name"
@@ -817,7 +822,8 @@ export default function DashboardIndexPage() {
         <div
           className="preview-container relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-md bg-gray-200 shadow-lg"
           style={{
-            aspectRatio: `${BASE_WIDTH} / ${BASE_HEIGHT}`,
+            width: `${BASE_WIDTH * scaleFactor}px`,
+            height: `${BASE_HEIGHT * scaleFactor}px`,
           }}
         >
           {/* Twitch Player */}
