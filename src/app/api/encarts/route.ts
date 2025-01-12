@@ -29,7 +29,16 @@ export async function OPTIONS(req: Request) {
 export async function GET(req: Request) {
   try {
     const allEncarts = await db.select().from(encarts);
-    return NextResponse.json({ success: true, data: allEncarts }, { headers: corsHeaders });
+    return NextResponse.json(
+      {
+        success: true,
+        data: allEncarts.map(encart => ({
+          ...encart,
+          referenceResolution: encart.referenceResolution || null, // Inclure la résolution de référence si disponible
+        })),
+      },
+      { headers: corsHeaders },
+    );
   } catch (error: any) {
     console.error(`GET request failed for: ${req.url}`, error);
     return NextResponse.json(
@@ -59,6 +68,7 @@ export async function POST(req: Request) {
       exitAnimationDuration,
       delayBetweenAppearances,
       displayDuration,
+      referenceResolution, // Nouveau champ à gérer
     } = await req.json();
 
     if (!userId) {
@@ -90,6 +100,7 @@ export async function POST(req: Request) {
         exitAnimationDuration,
         delayBetweenAppearances,
         displayDuration,
+        referenceResolution, // Insérer la résolution de référence
       })
       .returning();
 
