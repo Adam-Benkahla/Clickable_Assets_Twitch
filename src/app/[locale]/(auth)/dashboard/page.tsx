@@ -846,12 +846,12 @@ export default function DashboardIndexPage() {
                 key={encart.id}
                 id={encart.id}
                 position={{
-                  x: toPixels(encart.xPercent, BASE_WIDTH, containerWidth),
-                  y: toPixels(encart.yPercent, BASE_HEIGHT, containerHeight),
+                  x: toPixels(encart.xPercent, BASE_WIDTH),
+                  y: toPixels(encart.yPercent, BASE_HEIGHT),
                 }}
                 size={{
-                  width: toPixels(encart.widthPercent, BASE_WIDTH, containerWidth),
-                  height: toPixels(encart.heightPercent, BASE_HEIGHT, containerHeight),
+                  width: toPixels(encart.widthPercent, BASE_WIDTH),
+                  height: toPixels(encart.heightPercent, BASE_HEIGHT),
                 }}
                 onDragStop={(_e, d) => {
                   updateEncart(encart.id, {
