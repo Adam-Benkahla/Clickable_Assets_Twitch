@@ -78,14 +78,6 @@ export default function DashboardIndexPage() {
   }
 
   // Function to get the current iframe size
-  function getIframeSize() {
-    const iframeElement = document.querySelector('iframe');
-    if (iframeElement) {
-      const { width, height } = iframeElement.getBoundingClientRect();
-      return { width: Math.round(width), height: Math.round(height) };
-    }
-    return { width: 1536, height: 810 }; // Fallback values if iframe is not found
-  }
 
   const addEncart = async (template: typeof ENCART_TEMPLATES[number]) => {
     const newItem: Omit<EncartItem, 'id'> = {
