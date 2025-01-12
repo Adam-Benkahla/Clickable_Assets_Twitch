@@ -876,17 +876,19 @@ export default function DashboardIndexPage() {
                   height: encart.height * scaleY,
                 }}
                 onDragStop={(_e, d) => {
+                  const canvasScale = 0.6; // Match the scale applied to the canvas
                   updateEncart(encart.id, {
-                    x: d.x / scaleX,
-                    y: d.y / scaleY,
+                    x: d.x / (scaleX * canvasScale),
+                    y: d.y / (scaleY * canvasScale),
                   });
                 }}
                 onResizeStop={(_e, _dir, ref, _delta, pos) => {
+                  const canvasScale = 0.6;
                   updateEncart(encart.id, {
-                    width: Number.parseFloat(ref.style.width) / scaleX,
-                    height: Number.parseFloat(ref.style.height) / scaleY,
-                    x: pos.x / scaleX,
-                    y: pos.y / scaleY,
+                    width: Number.parseFloat(ref.style.width) / (scaleX * canvasScale),
+                    height: Number.parseFloat(ref.style.height) / (scaleY * canvasScale),
+                    x: pos.x / (scaleX * canvasScale),
+                    y: pos.y / (scaleY * canvasScale),
                   });
                 }}
                 style={{
