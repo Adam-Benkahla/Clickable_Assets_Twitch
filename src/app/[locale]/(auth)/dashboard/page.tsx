@@ -44,11 +44,7 @@ type EncartItem = {
   displayDuration?: number;
 };
 
-function toPixels(
-  percent: number,
-  base: number,
-  actual: number,
-): number {
+function toPixels(percent: number, actual: number): number {
   return (percent / 100) * actual;
 }
 
