@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'; // Node.js crypto module
 import { NextResponse } from 'next/server';
 
 import { db } from '@/libs/DB';
-import { encarts } from '@/models/Schema';
+import { obsAssets } from '@/models/Schema';
 
 // Common headers for CORS
 const corsHeaders = new Headers({
@@ -31,10 +31,10 @@ export async function GET(req: Request) {
 
   try {
     // Step 1: Fetch all encarts from the database
-    const allEncarts = await db.select().from(encarts);
+    const allobsAssets = await db.select().from(obsAssets);
 
     // Step 2: Serialize the data into a consistent format (e.g., JSON string)
-    const serializedData = JSON.stringify(allEncarts);
+    const serializedData = JSON.stringify(allobsAssets);
 
     // Step 3: Generate a SHA256 hash of the serialized data
     const hash = createHash('sha256').update(serializedData).digest('hex');
