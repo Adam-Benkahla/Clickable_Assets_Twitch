@@ -1,5 +1,6 @@
 import {
   bigint,
+  doublePrecision,
   integer,
   json,
   numeric,
@@ -8,6 +9,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 
@@ -79,4 +81,24 @@ export const encarts = pgTable('encarts', {
   delayBetweenAppearances: integer('delay_between_appearances').default(5000),
   displayDuration: integer('display_duration').default(3000),
   referenceResolution: json('reference_resolution'), // JSON for width/height reference
+});
+
+export const obsAssets = pgTable('obs_assets', {
+  id: uuid('id').primaryKey().defaultRandom(), // or .default(uuidGenerateV4())
+  source_name: varchar('source_name', { length: 255 }).notNull(),
+  scene_name: varchar('scene_name', { length: 255 }),
+  native_width: integer('native_width'),
+  native_height: integer('native_height'),
+  pos_x: doublePrecision('pos_x'),
+  pos_y: doublePrecision('pos_y'),
+  scale_x: doublePrecision('scale_x'),
+  scale_y: doublePrecision('scale_y'),
+  rotation_deg: doublePrecision('rotation_deg'),
+  final_width: doublePrecision('final_width'),
+  final_height: doublePrecision('final_height'),
+  canvas_width: integer('canvas_width'),
+  canvas_height: integer('canvas_height'),
+  clickable_link: text('clickable_link'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });

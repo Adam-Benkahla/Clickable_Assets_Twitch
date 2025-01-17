@@ -1,10 +1,11 @@
+import { eq } from 'drizzle-orm/expressions';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { db } from '@/libs/DB';
-import { encarts } from '@/models/Schema';
+import { obsAssets } from '@/models/Schema'; // <-- define your table as "obsAssets"
 
-// Common headers for CORS
+// CORS headers
 const corsHeaders = new Headers({
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -13,34 +14,29 @@ const corsHeaders = new Headers({
   'Access-Control-Allow-Credentials': 'true',
 });
 
-// Handle preflight CORS requests
-export async function OPTIONS(req: Request) {
-  // Use req to satisfy Vercel's requirement
-  // eslint-disable-next-line no-console
-  console.log(`OPTIONS request received from: ${req.url}`);
-
+// Handle CORS preflight
+export async function OPTIONS() {
   return new Response(null, {
-    status: 204, // No content for preflight requests
+    status: 204,
     headers: corsHeaders,
   });
 }
 
-// GET route
-export async function GET(req: Request) {
+// GET route: for your Twitch extension or other clients to read the stored data
+export async function GET() {
   try {
-    const allEncarts = await db.select().from(encarts);
+    // For example, fetch all rows
+    const allData = await db.select().from(obsAssets);
+    // Return it
     return NextResponse.json(
       {
         success: true,
-        data: allEncarts.map(encart => ({
-          ...encart,
-          referenceResolution: encart.referenceResolution || null, // Inclure la résolution de référence si disponible
-        })),
+        data: allData,
       },
       { headers: corsHeaders },
     );
   } catch (error: any) {
-    console.error(`GET request failed for: ${req.url}`, error);
+    console.error('GET request failed:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'An unexpected error occurred' },
       { status: 500, headers: corsHeaders },
@@ -48,66 +44,100 @@ export async function GET(req: Request) {
   }
 }
 
-// POST route
+// POST route: for your OBS plugin to send bounding-box data
 export async function POST(req: Request) {
   try {
+    // The plugin’s JSON structure. Adjust fields if you renamed them in C++.
     const {
-      label,
-      background,
-      fileUrl,
-      text,
-      linkUrl,
-      xPercent,
-      yPercent,
-      widthPercent,
-      heightPercent,
-      userId,
-      entryAnimation,
-      exitAnimation,
-      entryAnimationDuration,
-      exitAnimationDuration,
-      delayBetweenAppearances,
-      displayDuration,
-      referenceResolution, // Ensure this is extracted from the request
+      source_name,
+      scene_name,
+      native_width,
+      native_height,
+      pos_x,
+      pos_y,
+      scale_x,
+      scale_y,
+      rotation_deg,
+      final_width,
+      final_height,
+      canvas_width,
+      canvas_height,
+      clickable_link,
     } = await req.json();
-    // eslint-disable-next-line no-console
-    console.log('Received request body:', { referenceResolution });
-    if (!userId) {
+
+    // Validate we got some essential fields
+    if (!source_name) {
       return NextResponse.json(
-        { success: false, error: 'User ID is required.' },
+        { success: false, error: 'Missing required "source_name" field' },
         { status: 400, headers: corsHeaders },
       );
     }
 
-    const id = uuidv4();
+    // Here we do an "upsert":
+    //  1) check if row with "source_name" already exists
+    //  2) if yes, update it
+    //  3) else insert new row
 
-    const [insertedEncart] = await db
-      .insert(encarts)
-      .values({
+    // Example "check if row exists"
+    const existing = await db
+      .select()
+      .from(obsAssets)
+      .where(eq(obsAssets.source_name, source_name));
+
+    if (existing.length > 0) {
+      // row exists => update
+      await db
+        .update(obsAssets)
+        .set({
+          scene_name,
+          native_width,
+          native_height,
+          pos_x,
+          pos_y,
+          scale_x,
+          scale_y,
+          rotation_deg,
+          final_width,
+          final_height,
+          canvas_width,
+          canvas_height,
+          clickable_link,
+          updated_at: new Date(), // if you have updated_at column
+        })
+        .where(eq(obsAssets.source_name, source_name));
+      return NextResponse.json(
+        { success: true, message: 'Updated existing row', source_name },
+        { headers: corsHeaders },
+      );
+    } else {
+      // row doesn't exist => insert
+      const id = uuidv4(); // or use a serial PK
+      await db.insert(obsAssets).values({
         id,
-        userId,
-        label,
-        background,
-        fileUrl,
-        text,
-        linkUrl,
-        xPercent,
-        yPercent,
-        widthPercent,
-        heightPercent,
-        entryAnimation,
-        exitAnimation,
-        entryAnimationDuration,
-        exitAnimationDuration,
-        delayBetweenAppearances,
-        displayDuration,
-        referenceResolution, // Insert into the DB
-      })
-      .returning();
-
-    return NextResponse.json({ success: true, data: insertedEncart }, { headers: corsHeaders });
+        source_name,
+        scene_name,
+        native_width,
+        native_height,
+        pos_x,
+        pos_y,
+        scale_x,
+        scale_y,
+        rotation_deg,
+        final_width,
+        final_height,
+        canvas_width,
+        canvas_height,
+        clickable_link,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      return NextResponse.json(
+        { success: true, message: 'Inserted new row', source_name },
+        { headers: corsHeaders },
+      );
+    }
   } catch (error: any) {
-    console.error(`POST request failed for: ${req.url}`, error);
+    console.error('POST request failed:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'An unexpected error occurred' },
       { status: 500, headers: corsHeaders },
