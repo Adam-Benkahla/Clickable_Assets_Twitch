@@ -46,7 +46,10 @@ export async function GET() {
 // POST route: for your OBS plugin to send bounding-box data
 export async function POST(req: Request) {
   try {
-    // The plugin’s JSON structure. Adjust fields if you renamed them in C++.
+    // Parse the incoming JSON payload.
+    const payload = await req.json();
+    console.log('[POST] Received payload:', payload);
+
     const {
       asset_id,
       source_name,
@@ -63,29 +66,26 @@ export async function POST(req: Request) {
       canvas_width,
       canvas_height,
       clickable_link,
-    } = await req.json();
+    } = payload;
 
-    // Validate we got some essential fields
+    // Validate essential fields.
     if (!source_name) {
+      console.error('[POST] Missing required \'source_name\' field.');
       return NextResponse.json(
         { success: false, error: 'Missing required "source_name" field' },
         { status: 400, headers: corsHeaders },
       );
     }
 
-    // Here we do an "upsert":
-    //  1) check if row with "source_name" already exists
-    //  2) if yes, update it
-    //  3) else insert new row
-
-    // Example "check if row exists"
-    const existing = await db
-      .select()
-      .from(obsAssets)
-      .where(eq(obsAssets.source_name, source_name));
+    // Log before database operations.
+    console.log('[POST] Checking if asset exists for source:', source_name);
+    const existing = await db.select().from(obsAssets).where(eq(obsAssets.source_name, source_name));
 
     if (existing.length > 0) {
+      console.log('[POST] Existing asset found. Updating asset...');
       const id = asset_id;
+      // Log update details.
+      console.log('[POST] Updating asset with ID:', id, { scene_name, native_width, native_height, pos_x, pos_y });
       await db
         .update(obsAssets)
         .set({
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
           canvas_width,
           canvas_height,
           clickable_link,
-          updated_at: new Date(), // if you have updated_at column
+          updated_at: new Date(),
         })
         .where(eq(obsAssets.source_name, source_name));
       return NextResponse.json(
@@ -111,8 +111,11 @@ export async function POST(req: Request) {
         { headers: corsHeaders },
       );
     } else {
-      // row doesn't exist => insert
-      const id = asset_id; // or use a serial PK
+      console.log('[POST] No existing asset found. Inserting new asset...');
+      const id = asset_id; // Ensure this is a valid unique identifier.
+      // Log insert details.
+      console.log('[POST] Inserting new asset with ID:', id, { source_name, scene_name, native_width, native_height });
+
       await db.insert(obsAssets).values({
         id,
         source_name,
@@ -132,12 +135,14 @@ export async function POST(req: Request) {
         created_at: new Date(),
         updated_at: new Date(),
       });
+
       return NextResponse.json(
         { success: true, message: 'Inserted new row', source_name },
         { headers: corsHeaders },
       );
     }
   } catch (error: any) {
+    // Log the full error stack for debugging
     console.error('POST request failed:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'An unexpected error occurred' },
