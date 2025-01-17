@@ -1,6 +1,5 @@
 import { eq } from 'drizzle-orm/expressions';
 import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
 
 import { db } from '@/libs/DB';
 import { obsAssets } from '@/models/Schema'; // <-- define your table as "obsAssets"
@@ -48,6 +47,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const {
+      asset_id,
       source_name,
       scene_name,
       native_width,
@@ -71,14 +71,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if a row with the given source_name exists
+    // Check if a row with the same asset_id already exists
     const existing = await db
       .select()
       .from(obsAssets)
-      .where(eq(obsAssets.source_name, source_name));
+      .where(eq(obsAssets.id, asset_id));
 
     if (existing.length > 0) {
-      // Update existing row
+      // Row exists: update it
       await db
         .update(obsAssets)
         .set({
@@ -97,17 +97,16 @@ export async function POST(req: Request) {
           clickable_link,
           updated_at: new Date(),
         })
-        .where(eq(obsAssets.source_name, source_name));
-
+        .where(eq(obsAssets.id, asset_id));
       return NextResponse.json(
         { success: true, message: 'Updated existing row', source_name },
         { headers: corsHeaders },
       );
     } else {
-      // Insert new row with generated UUID
-      const id = uuidv4();
+      // Row doesn't exist: insert new
+      // Use the provided asset_id from OBS
       await db.insert(obsAssets).values({
-        id,
+        id: asset_id,
         source_name,
         scene_name,
         native_width,
@@ -125,10 +124,8 @@ export async function POST(req: Request) {
         created_at: new Date(),
         updated_at: new Date(),
       });
-
-      // Return the generated asset_id in the response
       return NextResponse.json(
-        { success: true, message: 'Inserted new row', source_name, asset_id: id },
+        { success: true, message: 'Inserted new row', source_name },
         { headers: corsHeaders },
       );
     }
