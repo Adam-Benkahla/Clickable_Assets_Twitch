@@ -97,4 +97,5 @@ export const obsAssets = pgTable('obs_assets', {
   clickable_link: text('clickable_link'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  obs_asset_id: varchar('obs_asset_id'),
 });

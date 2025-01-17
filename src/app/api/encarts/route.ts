@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm/expressions';
 import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 
 import { db } from '@/libs/DB';
 import { obsAssets } from '@/models/Schema'; // <-- define your table as "obsAssets"
@@ -47,7 +48,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const {
-      asset_id,
+      asset_id, // OBS-provided asset identifier
       source_name,
       scene_name,
       native_width,
@@ -71,14 +72,23 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if a row with the same asset_id already exists
-    const existing = await db
+    // Query for existing records with the same source_name
+    const existingRecords = await db
       .select()
       .from(obsAssets)
-      .where(eq(obsAssets.id, asset_id));
+      .where(eq(obsAssets.source_name, source_name));
 
-    if (existing.length > 0) {
-      // Row exists: update it
+    let recordToUpdate = null;
+    for (const record of existingRecords) {
+      // Compare the OBS asset IDs
+      if (record.obs_asset_id === asset_id) {
+        recordToUpdate = record;
+        break;
+      }
+    }
+
+    if (recordToUpdate) {
+      // If a matching record is found, update it
       await db
         .update(obsAssets)
         .set({
@@ -97,16 +107,16 @@ export async function POST(req: Request) {
           clickable_link,
           updated_at: new Date(),
         })
-        .where(eq(obsAssets.id, asset_id));
+        .where(eq(obsAssets.id, recordToUpdate.id));
       return NextResponse.json(
         { success: true, message: 'Updated existing row', source_name },
         { headers: corsHeaders },
       );
     } else {
-      // Row doesn't exist: insert new
-      // Use the provided asset_id from OBS
+      // No matching record: insert a new row with a new UUID
+      const newId = uuidv4();
       await db.insert(obsAssets).values({
-        id: asset_id,
+        id: newId,
         source_name,
         scene_name,
         native_width,
@@ -123,9 +133,10 @@ export async function POST(req: Request) {
         clickable_link,
         created_at: new Date(),
         updated_at: new Date(),
+        obs_asset_id: asset_id, // Store the OBS asset ID for future reference
       });
       return NextResponse.json(
-        { success: true, message: 'Inserted new row', source_name },
+        { success: true, message: 'Inserted new row', source_name, asset_id: newId },
         { headers: corsHeaders },
       );
     }

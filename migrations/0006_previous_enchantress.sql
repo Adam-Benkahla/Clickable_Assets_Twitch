@@ -1,0 +1,1 @@
+ALTER TABLE "obs_assets" ADD COLUMN "obs_asset_id" varchar;
