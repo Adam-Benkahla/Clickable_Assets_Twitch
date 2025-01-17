@@ -31,10 +31,8 @@ export const organizationSchema = pgTable(
     stripeSubscriptionId: text('stripe_subscription_id'),
     stripeSubscriptionPriceId: text('stripe_subscription_price_id'),
     stripeSubscriptionStatus: text('stripe_subscription_status'),
-    stripeSubscriptionCurrentPeriodEnd: bigint(
-      'stripe_subscription_current_period_end',
-      { mode: 'number' },
-    ),
+    stripeSubscriptionCurrentPeriodEnd: bigint('stripe_subscription_current_period_end', { mode: 'number' }),
+    api_key: text('api_key').unique(), // New column for storing API keys
     updatedAt: timestamp('updated_at', { mode: 'date' })
       .defaultNow()
       .$onUpdate(() => new Date())
@@ -43,9 +41,7 @@ export const organizationSchema = pgTable(
   },
   (table) => {
     return {
-      stripeCustomerIdIdx: uniqueIndex('stripe_customer_id_idx').on(
-        table.stripeCustomerId,
-      ),
+      stripeCustomerIdIdx: uniqueIndex('stripe_customer_id_idx').on(table.stripeCustomerId),
     };
   },
 );
