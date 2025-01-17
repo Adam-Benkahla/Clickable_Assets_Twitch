@@ -1,6 +1,5 @@
 import { eq } from 'drizzle-orm/expressions';
 import { NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
 
 import { db } from '@/libs/DB';
 import { obsAssets } from '@/models/Schema'; // <-- define your table as "obsAssets"
@@ -49,6 +48,7 @@ export async function POST(req: Request) {
   try {
     // The plugin’s JSON structure. Adjust fields if you renamed them in C++.
     const {
+      asset_id,
       source_name,
       scene_name,
       native_width,
@@ -85,10 +85,11 @@ export async function POST(req: Request) {
       .where(eq(obsAssets.source_name, source_name));
 
     if (existing.length > 0) {
-      // row exists => update
+      const id = asset_id;
       await db
         .update(obsAssets)
         .set({
+          id,
           scene_name,
           native_width,
           native_height,
@@ -111,7 +112,7 @@ export async function POST(req: Request) {
       );
     } else {
       // row doesn't exist => insert
-      const id = uuidv4(); // or use a serial PK
+      const id = asset_id; // or use a serial PK
       await db.insert(obsAssets).values({
         id,
         source_name,

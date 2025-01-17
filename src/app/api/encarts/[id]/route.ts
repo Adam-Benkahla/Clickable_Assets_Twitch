@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm/expressions';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/libs/DB';
-import { encarts } from '@/models/Schema';
+import { obsAssets } from '@/models/Schema';
 
-// Common headers for CORS
+// Common CORS
 const corsHeaders = new Headers({
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -13,21 +13,26 @@ const corsHeaders = new Headers({
   'Access-Control-Allow-Credentials': 'true',
 });
 
-// Handle preflight CORS requests
+// Preflight
 export async function OPTIONS() {
   return new Response(null, {
-    status: 204, // No content for preflight requests
+    status: 204,
     headers: corsHeaders,
   });
 }
 
-// PUT route
+// PUT => update by ID
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const id = params.id;
   const updateData = await req.json();
 
   try {
-    await db.update(encarts).set(updateData).where(eq(encarts.id, id));
+    // update the row
+    await db.update(obsAssets).set({
+      ...updateData,
+      updated_at: new Date(),
+    }).where(eq(obsAssets.id, id));
+
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error(error);
@@ -38,10 +43,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-// DELETE route
+// DELETE => by ID
 export async function DELETE(req: Request) {
   const url = new URL(req.url);
-  const id = url.pathname.split('/').pop();
+  const id = url.pathname.split('/').pop(); // e.g. /api/something/123 => "123"
 
   if (!id) {
     return NextResponse.json(
@@ -51,11 +56,10 @@ export async function DELETE(req: Request) {
   }
 
   try {
-    const result = await db.delete(encarts).where(eq(encarts.id, id)).returning();
-
+    const result = await db.delete(obsAssets).where(eq(obsAssets.id, id)).returning();
     if (result.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Encart not found' },
+        { success: false, error: 'Asset not found' },
         { status: 404, headers: corsHeaders },
       );
     }
