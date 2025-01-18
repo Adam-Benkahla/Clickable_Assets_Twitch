@@ -1,6 +1,6 @@
 {
-  "id": "c4b4c1f7-0033-499e-9469-3a082ee05322",
-  "prevId": "fca2b66b-67e5-44a1-8968-e023080ec7ff",
+  "id": "25612633-60f5-4706-a1fd-94c58d7914dd",
+  "prevId": "c4b4c1f7-0033-499e-9469-3a082ee05322",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -250,6 +250,12 @@
         "order_position": {
           "name": "order_position",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "testcolumngjegj": {
+          "name": "testcolumngjegj",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }

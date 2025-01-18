@@ -64,6 +64,13 @@
       "when": 1737219300388,
       "tag": "0008_slim_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1737224872399,
+      "tag": "0009_lush_warhawk",
+      "breakpoints": true
     }
   ]
 }

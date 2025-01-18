@@ -99,4 +99,5 @@ export const obsAssets = pgTable('obs_assets', {
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   obs_asset_id: varchar('obs_asset_id'),
   order_position: integer('order_position'),
+  testcolumngjegj: text('testcolumngjegj'),
 });

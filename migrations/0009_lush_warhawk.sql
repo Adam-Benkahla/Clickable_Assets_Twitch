@@ -1,0 +1,1 @@
+ALTER TABLE "obs_assets" ADD COLUMN "testcolumngjegj" text;
