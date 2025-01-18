@@ -1,25 +1,21 @@
-// src/app/api/webhooks/clerk/clerk/route.js
+// src/app/api/webhooks/clerk/route.js
 
-import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-import { insertApiKeyForUser } from '../../../../libs/apiKeys'; // Adjust the relative path as needed
-import { verifyClerkWebhookSignature } from '../../../../libs/clerkWebhook'; // Adjust the relative path as needed
+import { insertApiKeyForUser } from '../../../../libs/apiKeys'; // Adjust path as needed
+import { verifyClerkWebhookSignature } from '../../../../libs/clerkWebhook'; // Adjust path as needed
 
-// Disable Next.js's default body parser to handle raw body for signature verification
-export const runtime = 'nodejs'; // Use Node.js runtime for this route
-export const dynamic = 'force-dynamic'; // Ensure dynamic fetching (if necessary)
-export const revalidate = 0; // Disable caching if needed
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export async function POST(request) {
-  // Log the method and URL for debugging
-  // eslint-disable-next-line no-console
+export async function POST(request: NextRequest) {
   console.log(`Received ${request.method} request at /api/webhooks/clerk`);
 
   try {
-    const signature = request.headers.get('clerk-signature'); // Adjust based on Clerk's docs
+    const signature = request.headers.get('clerk-signature'); // Adjust header name as needed
     const secret = process.env.CLERK_WEBHOOK_SECRET;
 
     if (!signature || !secret) {
@@ -31,6 +27,8 @@ export async function POST(request) {
     const buffer = await request.arrayBuffer();
     const buf = Buffer.from(buffer);
 
+    console.log(`Received body length: ${buf.length}`);
+
     // Verify the webhook signature
     const isValid = verifyClerkWebhookSignature(buf, signature, secret);
 
@@ -41,27 +39,27 @@ export async function POST(request) {
 
     // Parse the JSON payload
     const event = JSON.parse(buf.toString());
+    console.log('Received event:', event.type);
 
     // Handle the 'user.created' event
     if (event.type === 'user.created') {
       const user = event.data;
       const userId = user.id;
+      console.log(`Processing API key assignment for user ID: ${userId}`);
 
-      // Generate a new API key
       const apiKey = crypto.randomBytes(32).toString('hex');
 
-      // Assign the API key to the user in the database
       try {
         await insertApiKeyForUser(userId, apiKey);
-        // eslint-disable-next-line no-console
-        console.log(`Assigned API key to user ${userId}`);
+        console.log(`Successfully assigned API key to user ${userId}`);
       } catch (dbError) {
         console.error('Error assigning API key:', dbError);
         return NextResponse.json({ error: 'Database error.' }, { status: 500 });
       }
+    } else {
+      console.log(`Unhandled event type: ${event.type}`);
     }
 
-    // Respond with a success message
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error) {
     console.error('Webhook handler error:', error);
