@@ -1,0 +1,1 @@
+ALTER TABLE "obs_assets" ALTER COLUMN "order" SET DATA TYPE varchar;
