@@ -49,6 +49,7 @@ export async function POST(req: Request) {
   try {
     const {
       asset_id, // OBS-provided asset identifier
+      api_key, // Your API key for authentication
       source_name,
       scene_name,
       native_width,
@@ -119,6 +120,7 @@ export async function POST(req: Request) {
       const newId = uuidv4();
       await db.insert(obsAssets).values({
         id: newId,
+        api_key,
         source_name,
         scene_name,
         native_width,

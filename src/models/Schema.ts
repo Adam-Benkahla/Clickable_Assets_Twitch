@@ -80,7 +80,10 @@ export const encarts = pgTable('encarts', {
 });
 
 export const obsAssets = pgTable('obs_assets', {
-  id: uuid('id').primaryKey().defaultRandom(), // or .default(uuidGenerateV4())
+  id: uuid('id').primaryKey().defaultRandom(),
+  api_key: varchar('api_key', { length: 255 })
+    .notNull()
+    .default(''), // Provide a default empty string or other value
   source_name: varchar('source_name', { length: 255 }).notNull(),
   scene_name: varchar('scene_name', { length: 255 }),
   native_width: integer('native_width'),

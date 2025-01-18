@@ -1,0 +1,1 @@
+ALTER TABLE "obs_assets" ADD COLUMN "api_key" varchar(255) DEFAULT '' NOT NULL;
