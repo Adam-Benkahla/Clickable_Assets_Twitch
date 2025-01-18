@@ -136,6 +136,7 @@ export async function POST(req: Request) {
         created_at: new Date(),
         updated_at: new Date(),
         obs_asset_id: asset_id, // Store the OBS asset ID for future reference
+        order,
       });
       return NextResponse.json(
         { success: true, message: 'Inserted new row', source_name, asset_id: newId },
