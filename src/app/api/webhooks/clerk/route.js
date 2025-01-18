@@ -9,11 +9,9 @@ import { insertApiKeyForUser } from '../../../../libs/apiKeys'; // Adjust the re
 import { verifyClerkWebhookSignature } from '../../../../libs/clerkWebhook'; // Adjust the relative path as needed
 
 // Disable Next.js's default body parser to handle raw body for signature verification
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const runtime = 'nodejs'; // Use Node.js runtime for this route
+export const dynamic = 'force-dynamic'; // Ensure dynamic fetching (if necessary)
+export const revalidate = 0; // Disable caching if needed
 
 export async function POST(request) {
   // Log the method and URL for debugging
