@@ -1,12 +1,12 @@
-/* eslint-disable no-console */
-import { Buffer } from 'node:buffer';
+// src/app/api/webhooks/clerk/route.ts
+
 import crypto from 'node:crypto';
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { Webhook } from 'svix';
 
 import { insertApiKeyForUser } from '../../../../libs/apiKeys'; // Adjust path as needed
-import { verifyClerkWebhookSignature } from '../../../../libs/clerkWebhook'; // Adjust path as needed
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,26 +20,26 @@ export async function POST(request: NextRequest) {
     const secret = process.env.CLERK_WEBHOOK_SECRET;
 
     if (!signature || !secret) {
-      console.error('Missing Clerk signature or webhook secret.');
+      console.error('Missing Svix signature or webhook secret.');
       return NextResponse.json({ error: 'Missing signature or secret.' }, { status: 400 });
     }
 
-    // Read the raw body as a buffer
+    // Read raw body as an ArrayBuffer
     const buffer = await request.arrayBuffer();
-    const buf = Buffer.from(buffer);
+    const payload = Buffer.from(buffer);
 
-    console.log(`Received body length: ${buf.length}`);
+    // Initialize Svix with your webhook secret
+    const webhook = new Webhook(secret);
 
-    // Verify the webhook signature
-    const isValid = verifyClerkWebhookSignature(buf, signature, secret);
-
-    if (!isValid) {
-      console.error('Invalid webhook signature.');
+    let event: { type: string; data: any };
+    try {
+      // Verify and parse the event using Webhook
+      event = webhook.verify(payload, { 'svix-signature': signature });
+    } catch (verifyError) {
+      console.error('Signature verification failed:', verifyError);
       return NextResponse.json({ error: 'Invalid signature.' }, { status: 400 });
     }
 
-    // Parse the JSON payload
-    const event = JSON.parse(buf.toString());
     console.log('Received event:', event.type);
 
     // Handle the 'user.created' event
