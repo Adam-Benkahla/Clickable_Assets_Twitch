@@ -16,12 +16,14 @@ export async function POST(request: NextRequest) {
   console.log(`Received ${request.method} request at /api/webhooks/clerk`);
 
   try {
-    const signature = request.headers.get('svix-signature');
+    const svixId = request.headers.get('svix-id');
+    const svixSignature = request.headers.get('svix-signature');
+    const svixTimestamp = request.headers.get('svix-timestamp');
     const secret = process.env.CLERK_WEBHOOK_SECRET;
 
-    if (!signature || !secret) {
-      console.error('Missing Svix signature or webhook secret.');
-      return NextResponse.json({ error: 'Missing signature or secret.' }, { status: 400 });
+    if (!svixId || !svixSignature || !svixTimestamp || !secret) {
+      console.error('Missing required Svix headers or webhook secret.');
+      return NextResponse.json({ error: 'Missing signature headers or secret.' }, { status: 400 });
     }
 
     // Read raw body as an ArrayBuffer
@@ -33,8 +35,12 @@ export async function POST(request: NextRequest) {
 
     let event: { type: string; data: any };
     try {
-      // Verify and parse the event using Webhook, with type assertion
-      event = webhook.verify(payload, { 'svix-signature': signature }) as { type: string; data: any };
+      // Verify and parse the event using Webhook, passing all required headers
+      event = webhook.verify(payload, {
+        'svix-id': svixId,
+        'svix-signature': svixSignature,
+        'svix-timestamp': svixTimestamp,
+      }) as { type: string; data: any };
     } catch (verifyError) {
       console.error('Signature verification failed:', verifyError);
       return NextResponse.json({ error: 'Invalid signature.' }, { status: 400 });
