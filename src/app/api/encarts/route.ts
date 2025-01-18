@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       canvas_width,
       canvas_height,
       clickable_link,
-      order,
+      order_position,
     } = await req.json();
 
     if (!source_name) {
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
           canvas_width,
           canvas_height,
           clickable_link,
-          order,
+          order_position,
           updated_at: new Date(),
         })
         .where(eq(obsAssets.id, recordToUpdate.id));
@@ -136,7 +136,7 @@ export async function POST(req: Request) {
         created_at: new Date(),
         updated_at: new Date(),
         obs_asset_id: asset_id, // Store the OBS asset ID for future reference
-        order,
+        order_position,
       });
       return NextResponse.json(
         { success: true, message: 'Inserted new row', source_name, asset_id: newId },

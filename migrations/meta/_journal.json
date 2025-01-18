@@ -64,6 +64,20 @@
       "when": 1737219300388,
       "tag": "0008_slim_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1737219956924,
+      "tag": "0009_fair_karen_page",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1737219990803,
+      "tag": "0010_fancy_redwing",
+      "breakpoints": true
     }
   ]
 }
