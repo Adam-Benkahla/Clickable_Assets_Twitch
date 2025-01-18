@@ -1,8 +1,9 @@
-// src/app/api/webhooks/clerk/route.js
-
+/* eslint-disable no-console */
+import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { insertApiKeyForUser } from '../../../../libs/apiKeys'; // Adjust path as needed
 import { verifyClerkWebhookSignature } from '../../../../libs/clerkWebhook'; // Adjust path as needed
