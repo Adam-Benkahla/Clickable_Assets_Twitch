@@ -3,18 +3,27 @@ import { eq } from 'drizzle-orm/expressions';
 import { db } from '@/libs/DB';
 import { organizationSchema } from '@/models/Schema';
 
+/**
+ * Assigns an API key to a user in the organization table.
+ * @param {string} userId - The Clerk user ID.
+ * @param {string} apiKey - The generated API key.
+ */
+
 export async function insertApiKeyForUser(userId, apiKey) {
   try {
-    // Update the organization row corresponding to the userId with the new API key
     const result = await db
       .update(organizationSchema)
       .set({ api_key: apiKey })
       .where(eq(organizationSchema.id, userId))
       .returning({ api_key: organizationSchema.api_key });
 
-    return result;
+    if (result.length === 0) {
+      throw new Error(`No organization found for user ID: ${userId}`);
+    }
+
+    return result[0];
   } catch (error) {
-    console.error('Database update failed:', error);
+    console.error('Failed to insert API key:', error);
     throw error;
   }
 }
