@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   console.log(`Received ${request.method} request at /api/webhooks/clerk`);
 
   try {
-    const signature = request.headers.get('clerk-signature'); // Adjust header name as needed
+    const signature = request.headers.get('svix-signature');
     const secret = process.env.CLERK_WEBHOOK_SECRET;
 
     if (!signature || !secret) {
