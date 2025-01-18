@@ -1,1 +1,1 @@
-ALTER TABLE "obs_assets" ALTER COLUMN "order" SET DATA TYPE integer;
+ALTER TABLE "obs_assets" ALTER COLUMN "order_position" SET DATA TYPE integer;

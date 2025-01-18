@@ -1,1 +1,0 @@
-ALTER TABLE "obs_assets" RENAME COLUMN "order" TO "order_position";
