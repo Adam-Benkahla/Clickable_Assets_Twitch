@@ -95,6 +95,7 @@ export const obsAssets = pgTable('obs_assets', {
   canvas_width: integer('canvas_width'),
   canvas_height: integer('canvas_height'),
   clickable_link: text('clickable_link'),
+  order: integer('order'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   obs_asset_id: varchar('obs_asset_id'),

@@ -63,6 +63,7 @@ export async function POST(req: Request) {
       canvas_width,
       canvas_height,
       clickable_link,
+      order,
     } = await req.json();
 
     if (!source_name) {
@@ -105,6 +106,7 @@ export async function POST(req: Request) {
           canvas_width,
           canvas_height,
           clickable_link,
+          order,
           updated_at: new Date(),
         })
         .where(eq(obsAssets.id, recordToUpdate.id));
