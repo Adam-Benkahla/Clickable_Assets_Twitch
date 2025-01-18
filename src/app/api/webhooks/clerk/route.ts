@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
 
     let event: { type: string; data: any };
     try {
-      // Verify and parse the event using Webhook
-      event = webhook.verify(payload, { 'svix-signature': signature });
+      // Verify and parse the event using Webhook, with type assertion
+      event = webhook.verify(payload, { 'svix-signature': signature }) as { type: string; data: any };
     } catch (verifyError) {
       console.error('Signature verification failed:', verifyError);
       return NextResponse.json({ error: 'Invalid signature.' }, { status: 400 });
