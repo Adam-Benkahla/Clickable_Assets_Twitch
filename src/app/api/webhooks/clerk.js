@@ -3,8 +3,8 @@ import crypto from 'node:crypto';
 
 import { buffer } from 'micro';
 
-import { insertApiKeyForUser } from '../../../lib/apiKeys';
-import { verifyClerkWebhookSignature } from '../../../lib/clerkWebhook';
+import { insertApiKeyForUser } from '../../../libs/apikeys';
+import { verifyClerkWebhookSignature } from '../../../libs/clerkWebhook';
 
 export const config = {
   api: {
