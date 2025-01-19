@@ -112,7 +112,7 @@ export async function POST(req: Request) {
         })
         .where(eq(obsAssets.id, recordToUpdate.id));
       return NextResponse.json(
-        { success: true, message: 'Updated existing row', source_name },
+        { success: true, message: 'Updated existing row', source_name, asset_id },
         { headers: corsHeaders },
       );
     } else {
