@@ -43,20 +43,23 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-// DELETE => by ID
+// DELETE => by obs_asset_id
 export async function DELETE(req: Request) {
   const url = new URL(req.url);
-  const id = url.pathname.split('/').pop(); // e.g. /api/something/123 => "123"
+  const obsAssetId = url.pathname.split('/').pop(); // Extract the obs_asset_id from the URL
 
-  if (!id) {
+  if (!obsAssetId) {
     return NextResponse.json(
-      { success: false, error: 'ID is required' },
+      { success: false, error: 'obs_asset_id is required' },
       { status: 400, headers: corsHeaders },
     );
   }
 
   try {
-    const result = await db.delete(obsAssets).where(eq(obsAssets.id, id)).returning();
+    const result = await db.delete(obsAssets)
+      .where(eq(obsAssets.obs_asset_id, obsAssetId)) // Match by obs_asset_id
+      .returning();
+
     if (result.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Asset not found' },
