@@ -61,10 +61,15 @@ export async function DELETE(req: Request) {
       .returning();
 
     if (result.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Asset not found' },
-        { status: 404, headers: corsHeaders },
-      );
+      const result = await db.delete(obsAssets)
+        .where(eq(obsAssets.id, obsAssetId)) // Match by obs_asset_id
+        .returning();
+      if (result.length === 0) {
+        return NextResponse.json(
+          { success: false, error: 'Asset not found' },
+          { status: 404, headers: corsHeaders },
+        );
+      }
     }
 
     return NextResponse.json({ success: true }, { headers: corsHeaders });
